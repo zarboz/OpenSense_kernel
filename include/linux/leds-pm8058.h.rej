@@ -1,0 +1,10 @@
+--- include/linux/leds-pm8058.h	2013-04-20 02:33:28.215487259 -0700
++++ include/linux/leds-pm8058.h	2013-04-20 02:30:40.745118749 -0700
+@@ -88,4 +88,7 @@
+ 	int out_current;
+ };
+ 
++extern void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
++					   enum led_brightness brightness);
++
+ #endif /* _LINUX_LEDS_PM8058_H */

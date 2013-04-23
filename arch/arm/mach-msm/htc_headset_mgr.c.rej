@@ -1,0 +1,52 @@
+--- arch/arm/mach-msm/htc_headset_mgr.c	2013-04-20 02:33:28.183486808 -0700
++++ arch/arm/mach-msm/htc_headset_mgr.c	2013-04-20 02:30:35.373042910 -0700
+@@ -942,25 +1039,39 @@
+ 	}
+ }
+ 
+-int hs_notify_plug_event(int insert)
++int hs_notify_plug_event(int insert, unsigned int intr_id)
+ {
+-	HS_DBG("Headset status %d", insert);
++	int ret = 0;
++	HS_LOG("Headset status++%d++ %d", intr_id,insert);
+ 
+ 	mutex_lock(&hi->mutex_lock);
+ 	hi->is_ext_insert = insert;
+ 	mutex_unlock(&hi->mutex_lock);
+ 
+ 	cancel_delayed_work_sync(&mic_detect_work);
+-	cancel_delayed_work_sync(&insert_detect_work);
+-	cancel_delayed_work_sync(&remove_detect_work);
+-
+-	if (hi->is_ext_insert)
+-		queue_delayed_work(detect_wq, &insert_detect_work,
++	ret = cancel_delayed_work_sync(&insert_detect_work);
++	if (ret && hs_mgr_notifier.key_int_enable) {
++		HS_LOG("Cancel insert work success");
++		if (!insert)
++		hs_mgr_notifier.key_int_enable(1);
++	}
++	ret = cancel_delayed_work_sync(&remove_detect_work);
++	if (ret && hs_mgr_notifier.key_int_enable) {
++		HS_LOG("Cancel remove work success");
++		if (insert)
++		hs_mgr_notifier.key_int_enable(0);
++	}
++	if (hi->is_ext_insert) {
++		ret = queue_delayed_work(detect_wq, &insert_detect_work,
+ 				   HS_JIFFIES_INSERT);
+-	else
+-		queue_delayed_work(detect_wq, &remove_detect_work,
+-				   HS_JIFFIES_REMOVE);
++		HS_LOG("queue insert work, ret = %d", ret);
++	}
++	else {
++		ret = queue_delayed_work(detect_wq, &remove_detect_work, 0);
++		HS_LOG("queue remove work, ret = %d", ret);
++	}
+ 
++	HS_LOG("Headset status--%d-- %d", intr_id,insert);
+ 	return 1;
+ }
+ 

@@ -1,0 +1,13 @@
+--- arch/arm/mach-msm/htc_battery_8x60.c	2013-04-20 02:33:28.183486808 -0700
++++ arch/arm/mach-msm/htc_battery_8x60.c	2013-04-20 02:30:35.373042910 -0700
+@@ -37,8 +37,10 @@
+ #include <linux/android_alarm.h>
+ #include <linux/suspend.h>
+ #include <linux/earlysuspend.h>
++#include <mach/rpm.h>
+ 
+ #define BATT_SUSPEND_CHECK_TIME			3600
++#define BATT_SUSPEND_HIGHFREQ_CHECK_TIME	(300)
+ #define BATT_TIMER_CHECK_TIME			360
+ 
+ #ifdef CONFIG_HTC_BATT_ALARM

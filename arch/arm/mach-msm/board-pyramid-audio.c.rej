@@ -1,0 +1,73 @@
+--- arch/arm/mach-msm/board-pyramid-audio.c	2013-04-20 02:33:28.183486808 -0700
++++ arch/arm/mach-msm/board-pyramid-audio.c	2013-04-20 02:30:35.365042796 -0700
+@@ -284,60 +265,34 @@
+ 			pyramid_snddev_fmspk_pamp_on(en);
+ 		if (curr_rx_mode & BIT_FM_HS)
+ 			pyramid_snddev_fmhs_pamp_on(en);
+-		atomic_set(&aic3254_ctl, 0);;
+-	}
+-}
+-
+-int pyramid_support_aic3254(void)
+-{
+-	return 1;
+-}
+-
+-int pyramid_support_back_mic(void)
+-{
+-	return 1;
+-}
+-
+-void pyramid_get_acoustic_tables(struct acoustic_tables *tb)
+-{
+-	switch (system_rev) {
+-	case 0:
+-	case 1:
+-		strcpy(tb->tpa2051, "TPA2051_CFG.csv");
+-		break;
+-	case 2:
+-		strcpy(tb->tpa2051, "TPA2051_CFG_XC.csv");
+-		break;
+-	default:
+-		strcpy(tb->tpa2051, "TPA2051_CFG_XC.csv");
+-		break;
++		atomic_set(&aic3254_ctl, 0);
+ 	}
+ }
+ 
+ int pyramid_support_beats(void)
+ {
+-	/* this means HW support 1V for beats */
+-	/* PCB ID is defined by HW revision
+-	 * [0] raised means support 1V headset
+-	 * [7-4] set as "1000" stands for PVT device */
+ 	if (((system_rev&0x1) == 0x1) && ((system_rev>>4&0xF) == 0x8))
+ 		return 1;
+ 	else
+ 		return 0;
+ }
+ 
+-void pyramid_enable_beats(int en)
++int pyramid_support_adie(void)
+ {
+-	pr_aud_info("%s: %d\n", __func__, en);
+-	set_beats_on(en);
++	return 0;
+ }
+ 
+-int pyramid_is_msm_i2s_slave(void)
++int pyramid_support_back_mic(void)
+ {
+-	/* 1 - CPU slave, 0 - CPU master */
+ 	return 1;
+ }
+ 
++void pyramid_enable_beats(int en)
++{
++	pr_aud_info("%s: %d\n", __func__, en);
++	set_beats_on(en);
++}
++
+ void pyramid_reset_3254(void)
+ {
+ 	gpio_tlmm_config(msm_aic3254_reset_gpio[0], GPIO_CFG_ENABLE);

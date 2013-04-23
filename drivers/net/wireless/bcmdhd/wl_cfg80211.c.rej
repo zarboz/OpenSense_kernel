@@ -1,0 +1,89 @@
+--- drivers/net/wireless/bcmdhd/wl_cfg80211.c	2013-04-20 02:33:28.199487030 -0700
++++ drivers/net/wireless/bcmdhd/wl_cfg80211.c	2013-04-20 02:30:37.337070635 -0700
+@@ -94,10 +93,16 @@
+ #endif /* BCMWAPI_WPI */
+ #define FORCE_MPC
+ 
++//BRCM APSTA START
++#if defined(APSTA_CONCURRENT) && defined(SOFTAP)
++extern struct net_device *ap_net_dev;
++#endif
++//BRCM APSTA END
++
+ static struct device *cfg80211_parent_dev = NULL;
+ struct wl_priv *wlcfg_drv_priv = NULL;
+ 
+-u32 wl_dbg_level = WL_DBG_ERR;
++u32 wl_dbg_level = WL_DBG_ERR ;
+ 
+ #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+ #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+@@ -411,6 +420,7 @@
+ static wl_scan_params_t *wl_cfg80211_scan_alloc_params(int channel,
+ 	int nprobes, int *out_params_size);
+ static void get_primary_mac(struct wl_priv *wl, struct ether_addr *mac);
++static int wl_dump_counters(struct net_device *dev);
+ 
+ /*
+  * Some external functions, TODO: move them to dhd_linux.h
+@@ -5937,11 +6106,16 @@
+ static void wl_scan_timeout(unsigned long data)
+ {
+ 	struct wl_priv *wl = (struct wl_priv *)data;
++	struct net_device *ndev = wl_to_prmry_ndev(wl);
+ 
+ 	if (wl->scan_request) {
+ 		WL_ERR(("timer expired\n"));
++		scan_timeout_num++;
++		if (scan_timeout_num > MAX_SCAN_TIMEOUT_FAIL)
++			wl_dump_counters(ndev);
++
+ 		if (wl->escan_on)
+-			wl_notify_escan_complete(wl, wl->escan_info.ndev, true);
++			wl_notify_escan_complete(wl, wl->escan_info.ndev, true, false);
+ 		else
+ 			wl_notify_iscan_complete(wl_to_iscan(wl), true);
+ 	}
+@@ -6132,7 +6355,7 @@
+ 
+ 		if (wl_get_drv_status_all(wl, SENDING_ACT_FRM)) {
+ 			p2p_dev_addr = wl_cfgp2p_retreive_p2p_dev_addr(bi, bi_length);
+-			if (p2p_dev_addr && !memcmp(p2p_dev_addr,
++			if (p2p_dev_addr && wl->afx_hdl&& !memcmp(p2p_dev_addr,
+ 				wl->afx_hdl->pending_tx_dst_addr.octet, ETHER_ADDR_LEN)) {
+ 				s32 channel = CHSPEC_CHANNEL(dtohchanspec(bi->chanspec));
+ 				WL_DBG(("ACTION FRAME SCAN : Peer found, channel : %d\n", channel));
+@@ -6193,13 +6416,14 @@
+ 				complete(&wl->act_frm_scan);
+ 		} else if (likely(wl->scan_request)) {
+ 			mutex_lock(&wl->usr_sync);
+-			del_timer_sync(&wl->scan_timeout);
+ 			WL_INFO(("ESCAN COMPLETED\n"));
+ 			wl->bss_list = (wl_scan_results_t *)wl->escan_info.escan_buf;
+ 			wl_inform_bss(wl);
+-			wl_notify_escan_complete(wl, ndev, false);
++			wl_notify_escan_complete(wl, ndev, false, false);
+ 			mutex_unlock(&wl->usr_sync);
+ 		}
++		/* reset scan_timeout num */
++		scan_timeout_num = 0;
+ 	}
+ 	else if (status == WLC_E_STATUS_ABORT) {
+ 		wl->escan_info.escan_state = WL_ESCAN_STATE_IDLE;
+@@ -6211,13 +6435,14 @@
+ 				complete(&wl->act_frm_scan);
+ 		} else if (likely(wl->scan_request)) {
+ 			mutex_lock(&wl->usr_sync);
+-			del_timer_sync(&wl->scan_timeout);
+ 			WL_INFO(("ESCAN ABORTED\n"));
+ 			wl->bss_list = (wl_scan_results_t *)wl->escan_info.escan_buf;
+ 			wl_inform_bss(wl);
+-			wl_notify_escan_complete(wl, ndev, true);
++			wl_notify_escan_complete(wl, ndev, true, false);
+ 			mutex_unlock(&wl->usr_sync);
+ 		}
++		/* reset scan_timeout num */
++		scan_timeout_num = 0;
+ 	}
+ 	else {
+ 		WL_ERR(("unexpected Escan Event %d : abort\n", status));

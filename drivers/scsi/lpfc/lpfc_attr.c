@@ -1552,9 +1552,6 @@ static int \
 lpfc_##attr##_init(struct lpfc_hba *phba, uint val) \
 { \
 	if (val >= minval && val <= maxval) {\
-		lpfc_printf_log(phba, KERN_ERR, LOG_INIT, \
-			"3052 lpfc_" #attr " changed from %d to %d\n", \
-			phba->cfg_##attr, val); \
 		phba->cfg_##attr = val;\
 		return 0;\
 	}\
@@ -1718,9 +1715,6 @@ static int \
 lpfc_##attr##_init(struct lpfc_vport *vport, uint val) \
 { \
 	if (val >= minval && val <= maxval) {\
-		lpfc_printf_vlog(vport, KERN_ERR, LOG_INIT, \
-			"3053 lpfc_" #attr " changed from %d to %d\n", \
-			vport->cfg_##attr, val); \
 		vport->cfg_##attr = val;\
 		return 0;\
 	}\
@@ -3121,9 +3115,6 @@ lpfc_link_speed_store(struct device *dev, struct device_attribute *attr,
 		if (nolip)
 			return strlen(buf);
 
-		lpfc_printf_vlog(vport, KERN_ERR, LOG_INIT,
-			"3054 lpfc_topology changed from %d to %d\n",
-			prev_val, val);
 		err = lpfc_issue_lip(lpfc_shost_from_vport(phba->pport));
 		if (err) {
 			phba->cfg_link_speed = prev_val;

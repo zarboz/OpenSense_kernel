@@ -1,0 +1,14 @@
+--- drivers/input/touchscreen/Kconfig	2013-04-20 02:33:28.187486863 -0700
++++ drivers/input/touchscreen/Kconfig	2013-04-20 02:30:36.725061997 -0700
+@@ -118,6 +118,11 @@
+         depends on I2C
+         default n
+ 
++config TOUCHSCREEN_CYPRESS_SWEEP2WAKE
++        tristate "Sweep2Wake for Cypress TMA300 based touchscreens"
++        depends on TOUCHSCREEN_CYPRESS_TMA
++        default n
++
+ config TOUCHSCREEN_COMPATIBLE_REPORT
+ 		bool "Touchscreen compatible repodepends on I2C"
+ 		default n

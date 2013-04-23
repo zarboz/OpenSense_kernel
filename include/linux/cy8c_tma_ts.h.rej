@@ -1,0 +1,25 @@
+--- include/linux/cy8c_tma_ts.h	2013-04-20 02:33:28.215487259 -0700
++++ include/linux/cy8c_tma_ts.h	2013-04-20 02:30:40.653117456 -0700
+@@ -17,6 +17,10 @@
+ #define CY8C_I2C_H
+ 
+ #include <linux/types.h>
++#ifdef CONFIG_TOUCHSCREEN_CYPRESS_SWEEP2WAKE
++#include <linux/input.h>
++#include <linux/leds-pm8058.h>
++#endif
+ 
+ #define CYPRESS_TMA_NAME "CY8CTMA340"
+ 
+@@ -42,5 +46,11 @@
+ 	uint16_t filter_level[4];
+ };
+ 
++#ifdef CONFIG_TOUCHSCREEN_CYPRESS_SWEEP2WAKE
++/* Sweep2Wake */
++extern void sweep2wake_setdev(struct input_dev * input_device);
++extern void sweep2wake_setleddev(struct led_classdev * led_dev);
++#endif
++
+ #endif
+ 

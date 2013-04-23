@@ -1,0 +1,48 @@
+--- drivers/net/wireless/bcmdhd/bcmsdh_sdmmc.c	2013-04-20 02:33:28.199487030 -0700
++++ drivers/net/wireless/bcmdhd/bcmsdh_sdmmc.c	2013-04-20 02:30:37.325070467 -0700
+@@ -777,6 +777,10 @@
+ 	int err_ret = 0; /* HTC_KlocWork */
+ 
+ 	sd_info(("%s: rw=%d, func=%d, addr=0x%05x\n", __FUNCTION__, rw, func, regaddr));
++	if (!gInstance->func[func]) {
++		sd_err(("func %d at %s is null\n", func, __func__));
++		return SDIOH_API_RC_FAIL;
++	}
+ 
+ 	DHD_PM_RESUME_WAIT(sdioh_request_byte_wait);
+ 	DHD_PM_RESUME_RETURN_ERROR(SDIOH_API_RC_FAIL);
+@@ -864,6 +868,10 @@
+ 		sd_err(("%s: Only CMD52 allowed to F0.\n", __FUNCTION__));
+ 		return SDIOH_API_RC_FAIL;
+ 	}
++	if (!gInstance->func[func]) {
++		sd_err(("func %d at %s is null\n", func, __func__));
++		return SDIOH_API_RC_FAIL;
++	}
+ 
+ 	sd_info(("%s: cmd_type=%d, rw=%d, func=%d, addr=0x%05x, nbytes=%d\n",
+ 	         __FUNCTION__, cmd_type, rw, func, addr, nbytes));
+@@ -914,6 +922,11 @@
+ 
+ 	sd_trace(("%s: Enter\n", __FUNCTION__));
+ 
++	if (!gInstance->func[func]) {
++		sd_err(("func %d at %s is null\n", func, __func__));
++		return SDIOH_API_RC_FAIL;
++	}
++
+ 	ASSERT(pkt);
+ 	DHD_PM_RESUME_WAIT(sdioh_request_packet_wait);
+ 	DHD_PM_RESUME_RETURN_ERROR(SDIOH_API_RC_FAIL);
+@@ -1004,6 +1017,11 @@
+ 
+ 	sd_trace(("%s: Enter\n", __FUNCTION__));
+ 
++	if (!gInstance->func[func]) {
++		sd_err(("func %d at %s is null\n", func, __func__));
++		return SDIOH_API_RC_FAIL;
++	}
++
+ 	DHD_PM_RESUME_WAIT(sdioh_request_buffer_wait);
+ 	DHD_PM_RESUME_RETURN_ERROR(SDIOH_API_RC_FAIL);
+ 	/* Case 1: we don't have a packet. */

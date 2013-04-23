@@ -1,0 +1,27 @@
+--- arch/arm/mach-msm/Makefile	2013-04-20 02:33:28.183486808 -0700
++++ arch/arm/mach-msm/Makefile	2013-04-20 02:30:35.365042796 -0700
+@@ -158,16 +166,21 @@
+ obj-$(CONFIG_MSM_IPC_ROUTER)+= ipc_socket.o
+ obj-$(CONFIG_MSM_DALRPC) += dal.o
+ obj-$(CONFIG_MSM_DALRPC_TEST) += dal_remotetest.o
+-obj-$(CONFIG_ARCH_MSM7X30) += dal_axi.o
+-obj-$(CONFIG_ARCH_MSM7X27A) += dal_axi.o
++#obj-$(CONFIG_ARCH_MSM7X30) += dal_axi.o
++obj-$(CONFIG_ARCH_MSM7X30) += dal_axi.o htc_drm.o htc_sdservice.o
++obj-$(CONFIG_ARCH_MSM7X27A) += dal_axi.o htc_drm.o htc_sdservice.o
+ obj-$(CONFIG_MSM_ADSP) += qdsp5/
+ #obj-$(CONFIG_MSM7KV2_AUDIO) += qdsp5v2/
+ obj-$(CONFIG_MSM7KV2_AUDIO) += qdsp5v2_2x/
++obj-$(CONFIG_MSM7KV2_1X_AUDIO) += qdsp5v2_1x/
+ obj-$(CONFIG_MSM7KV2_AUDIO) += htc_acoustic_7x30.o htc_acdb_7x30.o
++obj-$(CONFIG_MSM7KV2_1X_AUDIO) += htc_acoustic_7x30.o htc_acdb_7x30.o
+ 
+ obj-$(CONFIG_MSM_QDSP6) += qdsp6/
+-obj-$(CONFIG_MSM8X60_AUDIO) += qdsp6v2_1x/
++obj-$(CONFIG_MSM8X60_AUDIO) += qdsp6v2/
+ obj-$(CONFIG_MSM_AUDIO_QDSP6) += qdsp6v2/
++obj-$(CONFIG_MSM_AUDIO_QDSP6V2) += qdsp6v2/
++
+ obj-$(CONFIG_MSM_HW3D) += hw3d.o
+ ifdef CONFIG_PM
+ 	obj-$(CONFIG_ARCH_MSM8960) += pm-8x60.o

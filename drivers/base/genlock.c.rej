@@ -1,0 +1,66 @@
+--- drivers/base/genlock.c	2013-04-20 02:33:28.187486863 -0700
++++ drivers/base/genlock.c	2013-04-20 02:30:36.457058213 -0700
+@@ -625,33 +779,32 @@
+ 	return ret;
+ }
+ 
+-/**
+- * genlock_release_lock - Release a lock attached to a handle
+- * @handle - Pointer to the handle holding the lock
+- */
+-
+-void genlock_release_lock(struct genlock_handle *handle)
++static void genlock_release_lock(struct genlock_handle *handle)
+ {
+ 	unsigned long flags;
++	struct genlock *lock = NULL;
+ 
+ 	if (handle == NULL || handle->lock == NULL)
+ 		return;
++	if (atomic_read(&(handle->lock->refcount.refcount)) == 0)
++		return;
+ 
+ 	spin_lock_irqsave(&handle->lock->lock, flags);
++	lock = handle->lock;
+ 
+ 	/* If the handle is holding the lock, then force it closed */
+ 
+ 	if (handle_has_lock(handle->lock, handle)) {
++		GENLOCK_LOG_INFO("Releasing a handle that still holds lock (%d)\n", lock->state);
+ 		list_del(&handle->entry);
+ 		_genlock_signal(handle->lock);
+ 	}
+-	spin_unlock_irqrestore(&handle->lock->lock, flags);
+-
+-	kref_put(&handle->lock->refcount, genlock_destroy);
+ 	handle->lock = NULL;
+ 	handle->active = 0;
++	spin_unlock_irqrestore(&lock->lock, flags);
++
++	kref_put(&lock->refcount, genlock_destroy);
+ }
+-EXPORT_SYMBOL(genlock_release_lock);
+ 
+ /*
+  * Release function called when all references to a handle are released
+@@ -808,7 +972,19 @@
+ 		return genlock_wait(handle, param.timeout);
+ 	}
+ 	case GENLOCK_IOC_RELEASE: {
+-		genlock_release_lock(handle);
++		/*
++		 * Return error - this ioctl has been deprecated.
++		 * Locks should only be released when the handle is
++		 * destroyed
++		 */
++		GENLOCK_LOG_ERR("Deprecated RELEASE ioctl called\n");
++		return -EINVAL;
++	}
++	case GENLOCK_IOC_SETINFO: {
++		if (copy_from_user(&(handle->info), (void __user *) arg, sizeof(handle->info))) {
++			GENLOCK_LOG_ERR("invalid param size");
++			return -EINVAL;
++		}
+ 		return 0;
+ 	}
+ 	default:
